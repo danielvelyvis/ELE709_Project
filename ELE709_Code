@@ -1,0 +1,77 @@
+#include "dlab_def.h"
+//...
+
+pthread_t Control;
+sem_t data_avail; // Do not change the name of this semaphore
+// Declare global variables (common data), for example:
+#define MAXS 10000 // Maximum no of samples
+// Increase value of MAXS for more samples
+float theta[MAXS]; // Array for storing motor position
+float ref[MAXS]; // Array for storing reference input
+//...
+Kp = 1.0; // Initialize Kp to 1.
+run_time = 10.0; // Set the initial run time to 10 seconds.
+Fs = 200.0; // Set the initial sampling frequency to 200 Hz.
+Set motor_number. // Check your motor module for motor_number.
+Initialize ref[k] // Initialize the reference input vector ref[k].
+//...
+
+while (1) {
+    //Print out selection menu.
+    //Prompt user for selection.
+    switch (selection) {
+        case ’r’:
+        //...
+        sem_init(&data_avail, 0, 0);
+        Initialize(Fs, motor_number);
+        pthread_create(&Control, ...);
+        pthread_join(Control, ...);
+        Terminate();
+        sem_destroy(&data_avail);
+        break;
+
+        case ’u’:
+            prompt user for type of input: Step or Square
+            if type == step {
+                prompt for magnitude of the step
+                set up the step reference input {ref[k]}
+            }
+            if type == square {
+                prompt for magnitude, frequency and duty cycle
+                set up {ref[k]} using DLaB function Square()
+            }
+        break;
+
+        case ’p’:
+            //Prompt user for new value of Kp;
+        break;
+
+        case ’h’:
+            //Save the plot results in Postscript;
+        break;
+        case ’q’:
+            //We are done!
+        exit(0);
+        default:
+            //Invalid selection, print out error message;
+        break;
+    }
+}
+
+void *Control(void *arg)
+{
+    //...
+    k = 0;
+    no_of_samples = (int)(run_time*Fs);
+    while (k < no_of_samples) {
+        sem_wait(&data_avail);
+        motor_position = EtoR(ReadEncoder());
+        calculate tracking error: ek = ref[k] - motor_position;
+        calculate control value: uk = Kp*ek;
+        5
+        DtoA(VtoD(uk));
+        theta[k] = motor_position;
+        k++;
+    }
+    pthread_exit(NULL);
+}
