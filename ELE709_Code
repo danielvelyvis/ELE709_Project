@@ -1,60 +1,127 @@
 #include "dlab_def.h"
-//...
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <semaphore.h>
+
+#define MAXS 10000 // Maximum no of samples
 
 pthread_t Control;
 sem_t data_avail; // Do not change the name of this semaphore
-// Declare global variables (common data), for example:
-#define MAXS 10000 // Maximum no of samples
-// Increase value of MAXS for more samples
+
+// Declare global variables
 float theta[MAXS]; // Array for storing motor position
 float ref[MAXS]; // Array for storing reference input
+ref[0] = 0.0; //Initialize the reference input vector ref[k]
 //...
-Kp = 1.0; // Initialize Kp to 1.
-run_time = 10.0; // Set the initial run time to 10 seconds.
-Fs = 200.0; // Set the initial sampling frequency to 200 Hz.
-Set motor_number. // Check your motor module for motor_number.
-Initialize ref[k] // Initialize the reference input vector ref[k].
+Kp = 1.0; // Proportional Gain, initialize Kp to 1
+run_time = 10.0; // Total run time, set the initial run time to 10 seconds
+Fs = 200.0; // Sampling Frequency, set the initial sampling frequency to 200 Hz
+int motor_number = 5; // Motor Number to control, set the initial motor number to 5
 //...
 
-while (1) {
-    //Print out selection menu.
-    //Prompt user for selection.
-    switch (selection) {
-        case ’r’:
-        //...
-        sem_init(&data_avail, 0, 0);
-        Initialize(Fs, motor_number);
-        pthread_create(&Control, ...);
-        pthread_join(Control, ...);
-        Terminate();
-        sem_destroy(&data_avail);
-        break;
+int main()
+{
 
-        case ’u’:
-            prompt user for type of input: Step or Square
-            if type == step {
-                prompt for magnitude of the step
-                set up the step reference input {ref[k]}
-            }
-            if type == square {
-                prompt for magnitude, frequency and duty cycle
-                set up {ref[k]} using DLaB function Square()
-            }
-        break;
+    while (1) {
+        //Print out selection menu.
+        printf("\n**********MENU**********\n");
+        printf("r: Run control system\n");
+        printf("u: Set up reference input\n");
+        printf("p: Change proportional gain\n");
+        printf("h: Save plot results in Postscript\n");
+        printf("q: Quit\n");
 
-        case ’p’:
-            //Prompt user for new value of Kp;
-        break;
+        //Prompt user for selection.
+        char selection;
+        printf("\nEnter selection: ");
+        scanf("%c", &selection);
+        getchar();
+        
+        switch (selection) {
+            case 'r':
+                printf("\nRunning the control system...\n")
+                sem_init(&data_avail, 0, 0);
+                Initialize(Fs, motor_number);
+                
+                // Create a new thread to run the Control function
+                if (pthread_create(&Control, NULL, Control, NULL) != 0) {
+                    printf("Error: Failed to create thread.\n");
+                    continue;
+                }
+                // Wait for the Control thread to finish
+                if (pthread_join(Control, NULL) != 0) {
+                    printf("Error: Failed to join thread.\n");
+                    continue;
+                }
+                Terminate();
+                // Destroy the semaphore
+                sem_destroy(&data_avail);
+                break;
 
-        case ’h’:
-            //Save the plot results in Postscript;
-        break;
-        case ’q’:
-            //We are done!
-        exit(0);
-        default:
-            //Invalid selection, print out error message;
-        break;
+            case 'u':
+            
+                printf("\nSetting up the reference input...\n");
+
+                // Prompt user for type of input: Step or Square
+                char input_type;
+                printf("Enter the input type (s for Step, q for Square): ");
+                scanf("%c", &input_type);
+                getchar(); // consume '\n'
+            
+                if (input_type == 's') {
+                    float step_mag;
+                    printf("Enter the magnitude of the step (in degrees): ");
+                    scanf("%f", &step_mag);
+                    getchar();
+
+                    // Set up the step reference input {ref[k]}
+                    for (int k = 0; k < MAXS; k++) {
+                        ref[k] = step_mag;
+                    }
+                }
+                
+                else if (input_type == 'q') {
+                    float square_mag, square_freq, square_dc;
+                    printf("Enter the magnitude of the square wave (in degrees): ");
+                    scanf("%f", &square_mag);
+                    getchar();
+                    printf("Enter the frequency of the square wave (in Hz): ");
+                    scanf("%f", &square_freq);
+                    getchar();
+                    printf("Enter the duty cycle of the square wave: ");
+                    scanf("%f", &square_dc);
+                    getchar();
+
+                    // Set up the square reference input {ref[k]}
+                    Square(square_mag, square_freq, square_dc, ref, MAXS);
+                }
+                
+                else{
+                    printf("Error: Invalid Input");
+                }
+            break;
+
+            case 'p':
+                printf("\nEnter new Proportional Gain (Kp) value: ");
+                scanf("%f", &Kp);
+                getchar();
+            break;
+
+            case 'h':
+                SavePlot(theta, k, Fs, "plot.ps"); // Save the plot results to a Postscript file
+                return NULL;
+            break;
+            
+            case 'q':
+                printf("We're done!);
+            exit(0);
+            break;
+            
+            default:
+                //Invalid selection, print out error message;
+            break;
+        }
     }
 }
 
@@ -66,9 +133,8 @@ void *Control(void *arg)
     while (k < no_of_samples) {
         sem_wait(&data_avail);
         motor_position = EtoR(ReadEncoder());
-        calculate tracking error: ek = ref[k] - motor_position;
-        calculate control value: uk = Kp*ek;
-        5
+        ek = ref[k] - motor_position;
+        uk = Kp*ek;
         DtoA(VtoD(uk));
         theta[k] = motor_position;
         k++;
