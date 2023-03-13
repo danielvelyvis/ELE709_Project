@@ -1,4 +1,4 @@
-#include "dlab_def.h"
+//#include "dlab_def.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -14,9 +14,9 @@ float theta[MAXS]; // Array for storing motor position
 float ref[MAXS]; // Array for storing reference input
 ref[0] = 0.0; //Initialize the reference input vector ref[k]
 //...
-Kp = 1.0; // Proportional Gain, initialize Kp to 1
-run_time = 10.0; // Total run time, set the initial run time to 10 seconds
-Fs = 200.0; // Sampling Frequency, set the initial sampling frequency to 200 Hz
+float Kp = 1.0; // Proportional Gain, initialize Kp to 1
+float run_time = 10.0; // Total run time, set the initial run time to 10 seconds
+float Fs = 200.0; // Sampling Frequency, set the initial sampling frequency to 200 Hz
 int motor_number = 5; // Motor Number to control, set the initial motor number to 5
 //...
 
